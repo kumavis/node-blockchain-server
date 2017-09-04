@@ -120,7 +120,6 @@ var parsingFunc = {
 Manager.prototype.parse = function(data) {
   var type = TYPES[data.slice(0, 1)[0] - OFFSET];
   //try{
-  console.log('recieved: ' + type);
   var parsed = parsingFunc[type](rlp.decode(data.slice(1)))
   if(type === 'status'){
     this.status = parsed;  

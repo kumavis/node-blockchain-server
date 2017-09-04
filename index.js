@@ -10,15 +10,16 @@ const genesisHash = require('ethereum-common').genesisHash.v.slice(2)
 const EthPeerManager = require('./ethPeerManagner.js')
 const SyncManager = require('./syncManager.js')
 
-var db = leveldb('./blockchaindb')
-var blockchain = new Blockchain(db, false)
-
 var self = this
 var port = 30304
 
-doTheTango()
+module.exports = syncBlockchain
 
-function doTheTango(){
+
+function syncBlockchain(opts){
+  opts = opts || {}
+
+  var blockchain = opts.blockchain || new Blockchain(leveldb('./blockchaindb'), false)
 
   var network = new Network({
     address: '0.0.0.0',
@@ -76,7 +77,7 @@ function doTheTango(){
             peer.sendDisconnect(peer.DISCONNECT_REASONS.SUBPROTOCOL_REASON)
           } else {
             console.log('td: ' + status.td.toString('hex'));
-            console.log('headDetails: ' + headDetails);
+            console.log('headDetails:', headDetails);
             syncManager.sync(headDetails.td, head.header.number, peerMan, function(){
               console.log('done syncing'); 
             })
@@ -125,7 +126,9 @@ function doTheTango(){
         port: 30303
       }, done)
     }
-  ])
+  ], function(err){
+    if (err) throw err
+  })
 
   network.on('disconnect', function (dis) {
     console.log('networking', 'dissconect: ' + dis.reason)

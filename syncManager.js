@@ -31,20 +31,16 @@ SyncManager.prototype.sync = function(bctd, height, peer, cb) {
 
 SyncManager.prototype.downloadChain = function(peer, startHeight, cb){
   var self = this
-  console.log('downloading');
   peer.sendBlockHashesFromNumber(startHeight,  this.maxNumToDownload)
   peer.once('blockHashes', function(hashes){
-    console.log('got blockHashes');
     peer.fetchBlocks(hashes, function(blocks){
       self.blockchain.putBlocks(blocks, function(){
-        console.log('added blocks');
-        console.log(self.blockchain.meta);
-
         var lastHash = hashes[hashes.length - 1]
-        if(lastHash && lastHash.toString('hex') === peer.status.bestHash.toString('hex'))
+        // got best block from peer
+        if (lastHash && lastHash.toString('hex') === peer.status.bestHash.toString('hex')) {
           return cb()
-        else{
-          console.log(startHeight);
+        // download more blocks
+        } else {
           self.downloadChain(peer, startHeight + self.maxNumToDownload, cb)
         }
       })
